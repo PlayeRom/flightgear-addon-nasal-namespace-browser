@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<PropertyList>
+    <meta>
+        <file-type type="string">FlightGear add-on menu bar items</file-type>
+        <format-version type="int">1</format-version>
+    </meta>
+    <menubar-items>
+        <menu>
+            <label>Nasal Browser</label>
+            <enabled type="bool">true</enabled>
+
+            <item>
+                <label>Open Browser...</label>
+                <name>nasal-browser-addon-main</name>
+                <binding>
+                    <command>nasal</command>
+                    <script>globals['__addon[org.flightgear.addons.NasalNsBrowser]__'].NasalBrowserDialog.new();</script>
+                </binding>
+            </item>
+
+            <!-- <item>
+                <label>Open Old Browser...</label>
+                <name>nasal-browser-addon-old</name>
+                <binding>
+                    <command>nasal</command>
+                    <script>globals['__addon[org.flightgear.addons.NasalNsBrowser]__'].toggleWindow();</script>
+                </binding>
+            </item> -->
+
+            <!--
+            FOR DEVELOPMENT ONLY!
+            trigger reload of addon-main.nas
+            1) This item should be REMOVED for release versions.
+            2) Ensure the label is unique
+            3) replace addon ID  to match your addon
+            -->
+            <!-- <item>
+                <label>Reload Add-on</label>
+                <binding>
+                    <command>addon-reload</command>
+                    <id>org.flightgear.addons.NasalNsBrowser</id>
+                </binding>
+            </item> -->
+        </menu>
+    </menubar-items>
+</PropertyList>
