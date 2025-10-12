@@ -24,13 +24,17 @@ var NasalBrowserDialog = {
     # @return hash
     #
     new: func {
+        var title = g_VersionChecker.isNewVersion()
+            ? sprintf("Nasal Namespace Browser v.%s (new version %s is available)", g_Addon.version.str(), g_VersionChecker.getNewVersion())
+            : sprintf("Nasal Namespace Browser v.%s", g_Addon.version.str());
+
         var obj = {
             parents: [
                 NasalBrowserDialog,
                 TransientDialog.new(
                     width : 700,
                     height: 750,
-                    title : sprintf("Nasal Namespace Browser v.%s", g_Addon.version.str()),
+                    title : title,
                     resize: true,
                 ),
             ],

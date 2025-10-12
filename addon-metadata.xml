@@ -45,7 +45,7 @@
 
         <urls>
             <home-page type="string">https://github.com/PlayeRom/flightgear-addon-nasal-namespace-browser</home-page>
-            <download type="string">https://github.com/PlayeRom/flightgear-addon-nasal-namespace-browser</download>
+            <download type="string">https://github.com/PlayeRom/flightgear-addon-nasal-namespace-browser/releases</download>
             <support type="string">https://github.com/PlayeRom/flightgear-addon-nasal-namespace-browser/issues</support>
             <code-repository type="string">https://github.com/PlayeRom/flightgear-addon-nasal-namespace-browser</code-repository>
         </urls>

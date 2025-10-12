@@ -30,6 +30,11 @@ var g_isDevMode = false;
 var g_Addon = nil;
 
 #
+# Global object of VersionChecker.
+#
+var g_VersionChecker = nil;
+
+#
 # Create objects from add-on namespace.
 #
 var Bootstrap = {
@@ -43,6 +48,9 @@ var Bootstrap = {
         g_Addon = addon;
 
         me._initDevMode();
+
+        g_VersionChecker = GitHubVersionChecker.new();
+        g_VersionChecker.checkLastVersion();
     },
 
     #
