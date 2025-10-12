@@ -121,12 +121,18 @@ var NasalBrowserDialog = {
             })
             .setEnabled(false);
 
+        me._refreshBtn = canvas.gui.widgets.Button.new(me._group)
+            .setText("R")
+            .setFixedSize(26, 26)
+            .listen("clicked", func me._displayRoot());
+
         me._pathLabel = canvas.gui.widgets.Label.new(me._group)
             .setText(me._getPath());
 
         var hBox = canvas.HBoxLayout.new();
         hBox.addSpacing(me.PADDING);
         hBox.addItem(me._backBtn);
+        hBox.addItem(me._refreshBtn);
         hBox.addItem(me._pathLabel);
         hBox.addStretch(1);
 
