@@ -6,6 +6,14 @@ This addon is inspired by the original implementation, which appears to have bee
 
 While it retains the spirit and functionality of the original browser, the codebase has been refactored to use the current FlightGear Canvas UI.
 
+## Installation
+
+Installation is standard:
+
+1. Download source code of add-on and unzip it.
+
+2. In Launcher go to "Add-ons" tab. Click "Add" button by "Add-on Module folders" section and select folder with unzipped add-on directory (or add command line option: `--addon=/path/to/nasal-browser`), and click "Fly!".
+
 ## Keys
 
 - `Up`/`Down` – scroll content with small increments.
