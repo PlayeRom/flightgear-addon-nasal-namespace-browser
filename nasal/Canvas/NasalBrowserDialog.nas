@@ -297,11 +297,20 @@ var NasalBrowserDialog = {
     _getText: func(id, value, separator = " = ") {
         var type = typeof(value);
 
+        var val = "";
+        if (type == 'hash' and isa(value, props.Node)) {
+            val = value.getValue();
+            val = val == nil
+                ? ", props.Node value = nil"
+                : ", props.Node value = " ~ val;
+        }
+
            if (type == 'scalar') return id ~ separator ~ me._printScalarValue(value);
-        elsif (type == 'hash')   return id ~ separator ~ "{} (keys: " ~ size(value) ~ ")";
+        elsif (type == 'hash')   return id ~ separator ~ "{}" ~ val ~ " (keys: " ~ size(value) ~ ")";
         elsif (type == 'vector') return id ~ separator ~ "[] (items: " ~ size(value) ~ ")";
         elsif (type == 'nil')    return id ~ separator ~ "nil";
-        else                     return id ~ separator ~ "<" ~ type ~ ">"; # func, ghost
+        elsif (type == 'ghost')  return id ~ separator ~ "<ghost " ~ ghosttype(value) ~ ">";
+        else                     return id ~ separator ~ "<" ~ type ~ ">"; # func
     },
 
     #
