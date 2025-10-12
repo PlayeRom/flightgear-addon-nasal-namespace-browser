@@ -1,3 +1,5 @@
+# Legacy version of Nasal Browser. Written by "Philosopher'.
+
 var browser = nil;
 
 var makeWindow = func {
