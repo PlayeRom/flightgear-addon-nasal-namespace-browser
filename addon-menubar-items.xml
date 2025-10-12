@@ -15,7 +15,9 @@
                 <name>nasal-browser-addon-main</name>
                 <binding>
                     <command>nasal</command>
-                    <script>globals['__addon[org.flightgear.addons.NasalNsBrowser]__'].NasalBrowserDialog.new();</script>
+                    <script><![CDATA[
+                        globals['__addon[org.flightgear.addons.NasalNsBrowser]__'].NasalBrowserDialog.new();
+                    ]]></script>
                 </binding>
             </item>
 
@@ -24,7 +26,9 @@
                 <name>nasal-browser-addon-old</name>
                 <binding>
                     <command>nasal</command>
-                    <script>globals['__addon[org.flightgear.addons.NasalNsBrowser]__'].toggleWindow();</script>
+                    <script><![CDATA[
+                        globals['__addon[org.flightgear.addons.NasalNsBrowser]__'].toggleWindow();
+                    ]]></script>
                 </binding>
             </item> -->
 
