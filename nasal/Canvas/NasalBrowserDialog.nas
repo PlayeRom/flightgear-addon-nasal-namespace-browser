@@ -353,29 +353,12 @@ var NasalBrowserDialog = {
     _handleScrollKey: func(isArrow, isUp) {
         var dy = isArrow
             ? 20
-            : me._getScrollPageHeight();
+            : ScrollAreaHelper.getScrollPageHeight(me._scrollArea);
 
         if (isUp) {
             dy = -dy;
         }
 
         me._scrollArea.vertScrollBarBy(dy);
-    },
-
-    #
-    # @return double
-    #
-    _getScrollPageHeight: func() {
-        # TODO: use ScrollArea methods as they become available.
-        var contentHeight = me._scrollArea._content_size[1];
-        var maxScroll     = me._scrollArea._max_scroll[1];
-        var scrollerTrack = me._scrollArea._scroller_delta[1];
-
-        if (maxScroll == 0 or scrollerTrack == 0) {
-            return 0;
-        }
-
-        var visibleHeight = contentHeight - maxScroll;
-        return (visibleHeight / maxScroll) * scrollerTrack;
     },
 };
