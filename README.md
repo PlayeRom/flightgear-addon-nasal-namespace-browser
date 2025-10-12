@@ -30,3 +30,7 @@ On the list:
 - `Up`/`Down` – scroll content with small increments.
 - `PageUp`/`PageDown` – scroll the content by one visible screen.
 - `Esc` – close the window.
+
+## Performance
+
+This add-on creates the necessary GUI elements at runtime, so the first time you access a large number of elements, it will take a while. Subsequently, once-created GUI elements will be reused, so they won't be recreated, speeding up re-accessing the element. However, the first time you access an element with thousands of sub-elements (like `globals`.`local_weather`.`cloudArray`), it can take even several minutes!
