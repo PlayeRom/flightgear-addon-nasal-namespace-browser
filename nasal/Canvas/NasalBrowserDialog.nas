@@ -298,10 +298,9 @@ var NasalBrowserDialog = {
     #
     # @param  int|string  id  Index of vector or key name of hash.
     # @param  scalar|hash|vector|ghost|func|nil  value
-    # @param  string  separator
     # @return string
     #
-    _getText: func(id, value, separator = " = ") {
+    _getText: func(id, value) {
         var type = typeof(value);
 
         var val = "";
@@ -312,12 +311,12 @@ var NasalBrowserDialog = {
                 : ", props.Node value = " ~ val;
         }
 
-           if (type == 'scalar') return id ~ separator ~ me._printScalarValue(value);
-        elsif (type == 'hash')   return id ~ separator ~ "{}" ~ val ~ " (keys: " ~ size(value) ~ ")";
-        elsif (type == 'vector') return id ~ separator ~ "[] (items: " ~ size(value) ~ ")";
-        elsif (type == 'nil')    return id ~ separator ~ "nil";
-        elsif (type == 'ghost')  return id ~ separator ~ "<ghost " ~ ghosttype(value) ~ ">";
-        else                     return id ~ separator ~ "<" ~ type ~ ">"; # func
+           if (type == 'scalar') return id ~ " = " ~ me._printScalarValue(value);
+        elsif (type == 'hash')   return id ~ " = {}" ~ val ~ " (keys: " ~ size(value) ~ ")";
+        elsif (type == 'vector') return id ~ " = [] (items: " ~ size(value) ~ ")";
+        elsif (type == 'nil')    return id ~ " = nil";
+        elsif (type == 'ghost')  return id ~ " = <ghost " ~ ghosttype(value) ~ ">";
+        else                     return id ~ " = <" ~ type ~ ">"; # func
     },
 
     #
