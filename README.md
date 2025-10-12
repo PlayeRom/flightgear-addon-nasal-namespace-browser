@@ -14,6 +14,17 @@ Installation is standard:
 
 2. In Launcher go to "Add-ons" tab. Click "Add" button by "Add-on Module folders" section and select folder with unzipped add-on directory (or add command line option: `--addon=/path/to/nasal-browser`), and click "Fly!".
 
+## Navigation
+
+On the top bar:
+
+- `[<]` - back button, returns to the previous namespace.
+- `[R]` - refresh button, refreshes the current namespace.
+
+On the list:
+
+- `[>]` - "go inside" button, if the item is a hash or vector, and has more keys/elements than 0, we can see what's inside.
+
 ## Keys
 
 - `Up`/`Down` – scroll content with small increments.
