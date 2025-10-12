@@ -24,7 +24,7 @@ var NasalBrowserDialog = {
     # @return hash
     #
     new: func {
-        var me = {
+        var obj = {
             parents: [
                 NasalBrowserDialog,
                 TransientDialog.new(
@@ -36,13 +36,11 @@ var NasalBrowserDialog = {
             ],
         };
 
-        me._parentDialog = me.parents[1];
-
-        me._items = globals;
-        me._history = [];
-        me._path = [];
-        me._widgets = [];
-        me._resetPath();
+        obj._items = globals;
+        obj._history = [];
+        obj._path = [];
+        obj._widgets = [];
+        obj._resetPath();
 
         var scrollMargins = {
             left  : NasalBrowserDialog.PADDING,
@@ -51,36 +49,36 @@ var NasalBrowserDialog = {
             bottom: 0,
         };
 
-        me._scrollArea = ScrollAreaHelper.create(me._group, scrollMargins);
-        me._scrollContent = ScrollAreaHelper.getContent(
-            context: me._scrollArea,
+        obj._scrollArea = ScrollAreaHelper.create(obj._group, scrollMargins);
+        obj._scrollContent = ScrollAreaHelper.getContent(
+            context: obj._scrollArea,
         );
 
-        me._vbox.addSpacing(NasalBrowserDialog.PADDING);
-        me._vbox.addItem(me._drawTopBar());
-        me._vbox.addSpacing(NasalBrowserDialog.PADDING);
-        me._vbox.addItem(me._scrollArea, 1); # 2nd param = stretch
+        obj._vbox.addSpacing(NasalBrowserDialog.PADDING);
+        obj._vbox.addItem(obj._drawTopBar());
+        obj._vbox.addSpacing(NasalBrowserDialog.PADDING);
+        obj._vbox.addItem(obj._scrollArea, 1); # 2nd param = stretch
 
-        me._scrollLayout = canvas.VBoxLayout.new();
-        me._scrollArea.setLayout(me._scrollLayout);
+        obj._scrollLayout = canvas.VBoxLayout.new();
+        obj._scrollArea.setLayout(obj._scrollLayout);
 
-        me._displayRoot();
+        obj._displayRoot();
 
-        me._scrollLayout.addStretch(1);
+        obj._scrollLayout.addStretch(1);
 
-        me._keyActions();
+        obj._keyActions();
 
-        return me;
+        return obj;
     },
 
     #
     # Destructor.
     #
     # @return void
-    # @override PersistentDialog
+    # @override TransientDialog
     #
     del: func {
-        me._parentDialog.del();
+        call(TransientDialog.del, [], me);
     },
 
     #

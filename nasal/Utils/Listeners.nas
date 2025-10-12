@@ -26,11 +26,11 @@ var Listeners = {
     # @return hash
     #
     new: func() {
-        var me = { parents: [Listeners] };
+        var obj = { parents: [Listeners] };
 
-        me._listeners = std.Vector.new();
+        obj._listeners = std.Vector.new();
 
-        return me;
+        return obj;
     },
 
     #
@@ -79,7 +79,20 @@ var Listeners = {
     #
     clear: func() {
         foreach (var listener; me._listeners.vector) {
-            removelistener(listener);
+            # If this file is loaded into the `__addon[id]__` namespace, FG will
+            # call removelistener on our listeners automatically during unload.
+            # Therefore this removelistener will throw an error on the console,
+            # so we intercept it with the `call()` method.
+            call(removelistener, [listener], var errors = []);
+
+            foreach (var error; errors) {
+                if (error == "removelistener() with invalid listener id") {
+                    # Don't display an error that the lister has already been deleted.
+                    break;
+                }
+
+                Log.print(error);
+            }
         }
 
         me._listeners.clear();

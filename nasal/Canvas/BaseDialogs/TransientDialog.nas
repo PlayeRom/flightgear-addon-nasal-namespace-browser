@@ -20,16 +20,16 @@ var TransientDialog = {
     # @return hash
     #
     new: func(width, height, title, resize = false, onResize = nil) {
-        var me = {
+        var obj = {
             parents: [
                 TransientDialog,
                 Dialog.new(width, height, title, resize, onResize),
             ],
         };
 
-        me._handleKeys();
+        obj._handleKeys();
 
-        return me;
+        return obj;
     },
 
     #
@@ -39,7 +39,7 @@ var TransientDialog = {
     # @override Dialog
     #
     del: func() {
-        me.parents[1].del();
+        call(Dialog.del, [], me);
     },
 
     #
@@ -49,7 +49,7 @@ var TransientDialog = {
     # @override Dialog
     #
     show: func() {
-        me.parents[1].show();
+        call(Dialog.show, [], me);
     },
 
     #
@@ -59,7 +59,7 @@ var TransientDialog = {
     # @override Dialog
     #
     hide: func() {
-        me.parents[1].hide();
+        call(Dialog.hide, [], me);
     },
 
     #
