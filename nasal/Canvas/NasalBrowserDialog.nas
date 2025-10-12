@@ -187,11 +187,12 @@ var NasalBrowserDialog = {
     #
     _displayItem: func(index, widgetsSize, id, value) {
         var isClickable = isvec(value) or ishash(value);
+        var isBtnEnable = isClickable and size(value);
 
         if (index < widgetsSize) {
             # Modify existing widgets
             me._widgets[index].layout.itemAt(0).setText(me._getText(id, value)); # label
-            me._widgets[index].layout.itemAt(1).setVisible(isClickable);         # button
+            me._widgets[index].layout.itemAt(1).setVisible(isClickable).setEnabled(isBtnEnable); # button
             me._widgets[index].layout.setVisible(true);
             me._widgets[index].childId = id;
             me._widgets[index].childValue = value;
@@ -201,7 +202,7 @@ var NasalBrowserDialog = {
 
         # Add new widgets
         var label = me._getLabel(me._getText(id, value));
-        var button = me._getButton(">").setVisible(isClickable);
+        var button = me._getButton(">").setVisible(isClickable).setEnabled(isBtnEnable);
 
         func {
             var tmpIndex = index;
