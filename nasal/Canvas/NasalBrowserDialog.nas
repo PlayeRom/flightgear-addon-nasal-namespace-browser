@@ -43,8 +43,8 @@ var NasalBrowserDialog = {
         obj._resetPath();
 
         var scrollMargins = {
-            left  : NasalBrowserDialog.PADDING,
-            top   : NasalBrowserDialog.PADDING,
+            left  : me.PADDING,
+            top   : me.PADDING,
             right : 2,
             bottom: 0,
         };
@@ -54,9 +54,9 @@ var NasalBrowserDialog = {
             context: obj._scrollArea,
         );
 
-        obj._vbox.addSpacing(NasalBrowserDialog.PADDING);
+        obj._vbox.addSpacing(me.PADDING);
         obj._vbox.addItem(obj._drawTopBar());
-        obj._vbox.addSpacing(NasalBrowserDialog.PADDING);
+        obj._vbox.addSpacing(me.PADDING);
         obj._vbox.addItem(obj._scrollArea, 1); # 2nd param = stretch
 
         obj._scrollLayout = canvas.VBoxLayout.new();
@@ -121,7 +121,7 @@ var NasalBrowserDialog = {
             .setText(me._getPath());
 
         var hBox = canvas.HBoxLayout.new();
-        hBox.addSpacing(NasalBrowserDialog.PADDING);
+        hBox.addSpacing(me.PADDING);
         hBox.addItem(me._backBtn);
         hBox.addItem(me._pathLabel);
         hBox.addStretch(1);
