@@ -1,4 +1,5 @@
 # Legacy version of Nasal Browser. Written by "Philosopher'.
+# https://web.archive.org/web/20210726130630/http://codepad.org/14koLKeg
 
 var browser = nil;
 
