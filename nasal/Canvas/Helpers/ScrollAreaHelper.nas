@@ -1,5 +1,5 @@
 #
-# NasalNamespaceBrowser - Add-on for FlightGear
+# NasalNamespaceBrowser Add-on for FlightGear
 #
 # Written and developer by Roman Ludwicki (PlayeRom, SP-ROM)
 #

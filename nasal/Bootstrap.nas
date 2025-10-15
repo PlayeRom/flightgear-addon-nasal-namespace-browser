@@ -1,11 +1,11 @@
 #
-# NasalNamespaceBrowser - Add-on for FlightGear
+# CanvasSkeleton Add-on for FlightGear
 #
 # Written and developer by Roman Ludwicki (PlayeRom, SP-ROM)
 #
 # Copyright (C) 2025 Roman Ludwicki
 #
-# NasalNamespaceBrowser is an Open Source project and it is licensed
+# This is an Open Source project and it is licensed
 # under the GNU Public License v3 (GPLv3)
 #
 
@@ -49,7 +49,7 @@ var Bootstrap = {
 
         me._initDevMode();
 
-        g_VersionChecker = GitHubVersionChecker.new();
+        g_VersionChecker = VersionChecker.make();
         g_VersionChecker.checkLastVersion();
     },
 
@@ -59,6 +59,11 @@ var Bootstrap = {
     # @return void
     #
     uninit: func() {
+        Profiler.clear();
+
+        if (g_VersionChecker) {
+            g_VersionChecker.del();
+        }
     },
 
     #
@@ -67,6 +72,10 @@ var Bootstrap = {
     # @return void
     #
     _initDevMode: func() {
+        if (!Config.dev.useEnvFile) {
+            return;
+        }
+
         var env = DevEnv.new();
 
         var logLevel = env.getValue("MY_LOG_LEVEL");
