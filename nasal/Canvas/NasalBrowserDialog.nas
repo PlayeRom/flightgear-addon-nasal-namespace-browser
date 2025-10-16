@@ -17,6 +17,7 @@ var NasalBrowserDialog = {
     # Constants:
     #
     PADDING: 10,
+    TIMER_DELAY: 0.2,
 
     #
     # Constructor.
@@ -39,6 +40,15 @@ var NasalBrowserDialog = {
                 ),
             ],
         };
+
+        obj._filterNodes = {};
+        obj._addonNodePath = g_Addon.node.getPath();
+
+        foreach (var type; FiltersDialog.TYPES) {
+            obj._filterNodes[type] = props.globals.getNode(obj._addonNodePath ~ "/filters/" ~ type);
+        }
+
+        obj._filterTimer = Timer.make(me.TIMER_DELAY, obj, obj._filterCallback);
 
         obj._items = globals;
         obj._history = [];
@@ -66,11 +76,13 @@ var NasalBrowserDialog = {
         obj._scrollLayout = canvas.VBoxLayout.new();
         obj._scrollArea.setLayout(obj._scrollLayout);
 
+        obj._displayRootCounter = 0;
         obj._displayRoot();
 
-        obj._scrollLayout.addStretch(1);
-
         obj._keyActions();
+
+        obj._listeners = Listeners.new();
+        obj._setListeners();
 
         return obj;
     },
@@ -83,6 +95,44 @@ var NasalBrowserDialog = {
     #
     del: func {
         call(TransientDialog.del, [], me);
+    },
+
+    #
+    # Set listeners.
+    #
+    # @return void
+    #
+    _setListeners: func() {
+        foreach (var type; FiltersDialog.TYPES) {
+            me._listeners.add(
+                node: me._filterNodes[type],
+                code: func me._handleFilterListener(),
+                type: Listeners.ON_CHANGE_ONLY,
+            );
+        }
+    },
+
+    #
+    # Use a timer to delay screen refresh when multiple filters change their
+    # state "simultaneously" (within a very short time interval).
+    #
+    # @return void
+    #
+    _handleFilterListener: func() {
+        me._filterTimer.isRunning
+            ? me._filterTimer.restart(me.TIMER_DELAY)
+            : me._filterTimer.start();
+    },
+
+    #
+    # Filter timer callback.
+    #
+    # @return void
+    #
+    _filterCallback: func() {
+        me._filterTimer.stop();
+
+        me._displayRoot();
     },
 
     #
@@ -145,12 +195,19 @@ var NasalBrowserDialog = {
     _displayRoot: func {
         Profiler.start("_displayRoot");
 
+        if (me._displayRootCounter > 0) {
+            var lastIndex = me._scrollLayout.count() - 1;
+            me._scrollLayout.takeAt(lastIndex); # remove last stretch
+        }
+
+        me._displayRootCounter += 1;
+
         var widgetsSize = size(me._widgets);
         var index = 0;
 
         if (ishash(me._items)) {
             foreach (var key; sort(keys(me._items), func(a, b) cmp(me._toLower(a), me._toLower(b)))) {
-                if (key == "arg") {
+                if (key == "arg" or !me._isAllowedByFilters(me._items[key])) {
                     continue;
                 }
 
@@ -159,6 +216,10 @@ var NasalBrowserDialog = {
             }
         } elsif (isvec(me._items)) {
             forindex (var i; me._items) {
+                if (!me._isAllowedByFilters(me._items[i])) {
+                    continue;
+                }
+
                 me._displayItem(index, widgetsSize, i, me._items[i]);
                 index += 1;
             }
@@ -170,7 +231,23 @@ var NasalBrowserDialog = {
             me._widgets[i].layout.setVisible(false);
         }
 
+        me._scrollLayout.addStretch(1);
+
         Profiler.stop();
+    },
+
+    #
+    # @param  mixed  value
+    # @return bool
+    #
+    _isAllowedByFilters: func(value) {
+        var type = typeof(value);
+
+        if (contains(me._filterNodes, type)) {
+            return me._filterNodes[type].getBoolValue();
+        }
+
+        return true;
     },
 
     #
@@ -303,20 +380,27 @@ var NasalBrowserDialog = {
     _getText: func(id, value) {
         var type = typeof(value);
 
-        var val = "";
-        if (type == 'hash' and isa(value, props.Node)) {
-            val = value.getValue();
-            val = val == nil
-                ? ", props.Node value = nil"
-                : ", props.Node value = " ~ val;
-        }
+        if (type == 'scalar') {
+            return id ~ " = " ~ me._printScalarValue(value);
+        } elsif (type == 'hash')   {
+            var val = "";
+            if (isa(value, props.Node)) {
+                val = value.getValue();
+                val = val == nil
+                    ? ", props.Node value = nil"
+                    : ", props.Node value = " ~ val;
+            }
 
-           if (type == 'scalar') return id ~ " = " ~ me._printScalarValue(value);
-        elsif (type == 'hash')   return id ~ " = {}" ~ val ~ " (keys: " ~ size(value) ~ ")";
-        elsif (type == 'vector') return id ~ " = [] (items: " ~ size(value) ~ ")";
-        elsif (type == 'nil')    return id ~ " = nil";
-        elsif (type == 'ghost')  return id ~ " = <ghost " ~ ghosttype(value) ~ ">";
-        else                     return id ~ " = <" ~ type ~ ">"; # func
+            return id ~ " = {}" ~ val ~ " (keys: " ~ size(value) ~ ")";
+        } elsif (type == 'vector') {
+            return id ~ " = [] (items: " ~ size(value) ~ ")";
+        } elsif (type == 'nil')    {
+            return id ~ " = nil";
+        } elsif (type == 'ghost')  {
+            return id ~ " = <ghost " ~ ghosttype(value) ~ ">";
+        } else                     {
+            return id ~ " = <" ~ type ~ ">"; # func
+        }
     },
 
     #

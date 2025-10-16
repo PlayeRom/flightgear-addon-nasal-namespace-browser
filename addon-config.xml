@@ -28,13 +28,16 @@ along with FlightGear.  If not, see <http://www.gnu.org/licenses/>.
 <PropertyList>
     <addons>
         <by-id>
-            <org.flightgear.addons.NasalBrowser>
-                <addon-devel>
-                    <foo type="int">1</foo>
-                    <bar type="bool">false</bar>
-                    <my-prop>sample</my-prop>
-                </addon-devel>
-            </org.flightgear.addons.NasalBrowser>
+            <org.flightgear.addons.NasalNsBrowser>
+                <filters>
+                    <scalar type="bool">true</scalar>
+                    <hash type="bool">true</hash>
+                    <vector type="bool">true</vector>
+                    <ghost type="bool">true</ghost>
+                    <func type="bool">true</func>
+                    <nil type="bool">true</nil>
+                </filters>
+            </org.flightgear.addons.NasalNsBrowser>
         </by-id>
     </addons>
 </PropertyList>

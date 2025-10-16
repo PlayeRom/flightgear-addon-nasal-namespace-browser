@@ -34,6 +34,17 @@
                 </binding>
             </item>
 
+            <item>
+                <label>Filters...</label>
+                <name>nasal-browser-addon-filters</name>
+                <binding>
+                    <command>nasal</command>
+                    <script><![CDATA[
+                        globals['__addon[org.flightgear.addons.NasalNsBrowser]__'].FiltersDialog.new();
+                    ]]></script>
+                </binding>
+            </item>
+
             <!-- <item>
                 <label>Open Old Browser...</label>
                 <name>nasal-browser-addon-old</name>
