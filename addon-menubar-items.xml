@@ -23,7 +23,7 @@
             <label>Nasal Browser</label>
 
             <item>
-                <label>Open Browser...</label>
+                <label>Nasal Browser...</label>
                 <binding>
                     <command>nasal</command>
                     <script><![CDATA[
@@ -38,12 +38,12 @@
             </item>
 
             <item>
-                <label>Open Old Browser...</label>
+                <label>Legacy Browser v.1...</label>
                 <name>nasal-browser-addon-old</name>
                 <binding>
                     <command>nasal</command>
                     <script><![CDATA[
-                        globals['__addon[org.flightgear.addons.NasalNsBrowser]__'].toggleWindow();
+                        globals['__addon[org.flightgear.addons.NasalNsBrowser]__'].NasalBrowserV1.toggleWindow();
                     ]]></script>
                 </binding>
             </item> -->
