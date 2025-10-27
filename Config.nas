@@ -23,7 +23,7 @@ var Config = {
         "/Loader.nas",
         "/Config.nas",
         "/nasal/Canvas/BaseDialogs/PersistentDialog.nas",
-        "/nasal/Legacy/NasalBrowser.nas",
+        "/nasal/Legacy/NasalBrowserV1.nas",
         # TODO: add more file names here if needed...
     ],
 
