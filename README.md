@@ -18,16 +18,18 @@ Installation is standard:
 
 On the top bar:
 
-- `[<]` - back button, returns to the previous namespace.
-- `[R]` - refresh button, refreshes the current namespace.
+- `[<]` – back button, returns to the previous namespace.
+- `[Refresh]` – refreshes the current namespace.
+- `[Filters...]` – open new window with filters and sort options.
+- `[Search...]` – a text field where you can enter a namespace name or value to find it. Press Enter to confirm your entry. To search for the next occurrence, press Enter again. The search text ignores case. The found occurrence will be highlighted in red.
 
 On the list:
 
-- `[>]` - "go inside" button, if the item is a hash or vector, and has more keys/elements than 0, we can see what's inside.
+- `[>]` – "go inside" button, if the item is a hash or vector, and has more keys/elements than 0, we can see what's inside.
 
 ## Keys
 
-- `Up`/`Down` – scroll content with small increments.
+- `Up`/`Down` – scroll the content by 1/20 visible screen.
 - `PageUp`/`PageDown` – scroll the content by one visible screen.
 - `Esc` – close the window.
 
@@ -40,6 +42,8 @@ On the list:
 5. Ghost objects (coming from C++) are displayed as `<ghost {type}>` where `{type}` is the ghost type, e.g. `Timer`, `prop`, `canvas.Widget`, `airport`, etc.
 6. Functions are marked as `<func>`.
 7. Ability to filter displayed items by type: `func`, `ghost`, `hash`, `nil`, `scalar` and `vector`.
+8. Ability to sort items by type: `func`, `ghost`, `hash`, `nil`, `scalar` and `vector`.
+9. Ability to search for an element by entering any text.
 
 
 ## Performance
