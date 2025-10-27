@@ -206,9 +206,16 @@ var NasalBrowserDialog = {
         var index = 0;
 
         if (ishash(me._items)) {
+            var hasArg = false;
+
             foreach (var key; sort(keys(me._items), func(a, b) cmp(me._toLower(a), me._toLower(b)))) {
-                if (key == "arg" or !me._isAllowedByFilters(me._items[key])) {
+                if ((key == "arg" and hasArg) or !me._isAllowedByFilters(me._items[key])) {
                     continue;
+                }
+
+                if (key == "arg") {
+                    # Add "arg" only once
+                    hasArg = true;
                 }
 
                 me._displayItem(index, widgetsSize, key, me._items[key]);
