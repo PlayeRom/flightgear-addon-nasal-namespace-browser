@@ -38,7 +38,7 @@ var FiltersDialog = {
                 FiltersDialog,
                 TransientDialog.new(
                     width : 210,
-                    height: 300,
+                    height: 340,
                     title : "Nasal Browser Filters",
                     resize: false,
                 ),
@@ -53,6 +53,8 @@ var FiltersDialog = {
         foreach (var type; me.TYPES) {
             obj._nodes[type] = props.globals.getNode(obj._addonNodePath ~ "/filters/" ~ type);
         }
+
+        obj._optionSortByType = props.globals.getNode(obj._addonNodePath ~ "/options/sort-by-type");
 
         obj._buildLayout();
 
@@ -90,6 +92,13 @@ var FiltersDialog = {
                 me._checkboxes[type].setChecked(true);
             }
         }));
+
+        me._checkboxSortyByType = me._getCheckbox('Sorty by type', me._optionSortByType);
+
+        me._vbox.addSpacing(me.PADDING);
+        me._vbox.addItem(canvas.gui.widgets.HorizontalRule.new(me._group));
+        me._vbox.addSpacing(me.PADDING);
+        me._vbox.addItem(me._checkboxSortyByType);
 
         me._vbox.addStretch(1);
     },

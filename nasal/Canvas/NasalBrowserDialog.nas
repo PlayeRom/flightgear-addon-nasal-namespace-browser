@@ -50,6 +50,8 @@ var NasalBrowserDialog = {
 
         obj._filterTimer = Timer.make(me.TIMER_DELAY, obj, obj._filterCallback);
 
+        obj._optionSortByType = props.globals.getNode(obj._addonNodePath ~ "/options/sort-by-type");
+
         obj._items = globals;
         obj._history = [];
         obj._path = [];
@@ -110,6 +112,12 @@ var NasalBrowserDialog = {
                 type: Listeners.ON_CHANGE_ONLY,
             );
         }
+
+        me._listeners.add(
+            node: me._optionSortByType,
+            code: func me._displayRoot(),
+            type: Listeners.ON_CHANGE_ONLY,
+        );
     },
 
     #
@@ -202,38 +210,20 @@ var NasalBrowserDialog = {
 
         me._displayRootCounter += 1;
 
+        var children = me._getSortedChildren();
+
         var widgetsSize = size(me._widgets);
-        var index = 0;
+        var childrenSize = size(children);
+        var loopSize = widgetsSize > childrenSize ? widgetsSize : childrenSize;
 
-        if (ishash(me._items)) {
-            var hasArg = false;
-
-            foreach (var key; sort(keys(me._items), func(a, b) cmp(me._toLower(a), me._toLower(b)))) {
-                if ((key == "arg" and hasArg) or !me._isAllowedByFilters(me._items[key])) {
-                    continue;
-                }
-
-                if (key == "arg") {
-                    # Add "arg" only once
-                    hasArg = true;
-                }
-
-                me._displayItem(index, widgetsSize, key, me._items[key]);
-                index += 1;
+        for (var i = 0; i < loopSize; i += 1) {
+            if (i < childrenSize) {
+                var child = children[i];
+                me._displayItem(i, widgetsSize, child.key, child.value);
+                continue;
             }
-        } elsif (isvec(me._items)) {
-            forindex (var i; me._items) {
-                if (!me._isAllowedByFilters(me._items[i])) {
-                    continue;
-                }
 
-                me._displayItem(index, widgetsSize, i, me._items[i]);
-                index += 1;
-            }
-        }
-
-        # Hide rest of widgets
-        for (var i = index; i < widgetsSize; i += 1) {
+            # Hide rest of widgets
             me._widgets[i].layout.itemAt(1).setVisible(false); # button
             me._widgets[i].layout.setVisible(false);
         }
@@ -241,6 +231,115 @@ var NasalBrowserDialog = {
         me._scrollLayout.addStretch(1);
 
         Profiler.stop();
+    },
+
+    #
+    # @return vector  Array of {key, value} items allowed by filters and sorted.
+    #
+    _getSortedChildren: func() {
+        var children = [];
+
+        var processFunc = me._getProcessChildrenFunc();
+        if (processFunc != nil) {
+            call(processFunc, [func(key, value) {
+                append(children, {
+                    key: key,
+                    value: value,
+                });
+            }], me);
+        }
+
+        return me._sortElements(children);
+    },
+
+    #
+    # @return func|nil  Function to process children of current `me._items`.
+    #
+    _getProcessChildrenFunc: func() {
+        if (ishash(me._items)) return me._getChildrenForHash;
+        if (isvec(me._items))  return me._getChildrenForVector;
+
+        return nil;
+    },
+
+    #
+    # Get allowed children of hash by calling `callback` function for each.
+    #
+    # @param  func  callback  Function to call for each allowed child: func(key, value).
+    # @return void
+    #
+    _getChildrenForHash: func(callback) {
+        var hasArg = false;
+
+        foreach (var key; keys(me._items)) {
+            if ((key == "arg" and hasArg) or !me._isAllowedByFilters(me._items[key])) {
+                continue;
+            }
+
+            if (key == "arg") {
+                # Add "arg" only once
+                hasArg = true;
+            }
+
+            callback(key, me._items[key]);
+        }
+    },
+
+    #
+    # Get allowed children of vector by calling `callback` function for each.
+    #
+    # @param  func  callback  Function to call for each allowed child: func(key, value).
+    # @return void
+    #
+    _getChildrenForVector: func(callback) {
+        forindex (var i; me._items) {
+            if (!me._isAllowedByFilters(me._items[i])) {
+                continue;
+            }
+
+            callback(i, me._items[i]);
+        }
+    },
+
+    #
+    # Sort vector by key or by type and then by key.
+    #
+    # @param  vector  items
+    # @return vector  Sorted array of {key, value} items.
+    #
+    _sortElements: func(items) {
+        if (me._optionSortByType.getBoolValue()) {
+            # Sort by type first, then by key
+            return sort(items, func(a, b) {
+                return me._compareByType(a, b)
+                    or me._compareByKey(a, b);
+            });
+        }
+
+        # Sorty by key only
+        return sort(items, func(a, b) me._compareByKey(a, b));
+    },
+
+    #
+    # Compare two hashes by `keys` element.
+    #
+    # @param  hash  a
+    # @param  hash  b
+    # @return int  Comparison result (-1, 0, 1).
+    #
+    _compareByKey: func(a, b) {
+        return me._compare(a.key, b.key);
+    },
+
+    #
+    # Compare two hashes by type of `value` element.
+    #
+    # @param  hash  a
+    # @param  hash  b
+    # @return int  Comparison result (-1, 0, 1).
+    #
+    _compareByType: func(a, b) {
+        return cmp(typeof(a.value), typeof(b.value));
     },
 
     #
@@ -262,10 +361,35 @@ var NasalBrowserDialog = {
     # @return string Return string converted to lower case letters.
     #
     _toLower: func(scalar) {
-           if (isint(scalar)) scalar = sprintf("%d", scalar);
-        elsif (isnum(scalar)) scalar = sprintf("%f", scalar);
+        if (isstr(scalar)) {
+            return string.lc(scalar);
+        }
 
-        return string.lc(scalar);
+        return scalar;
+    },
+
+    #
+    # Compare two scalar values for sort function.
+    #
+    # @param  scalar  a
+    # @param  scalar  b
+    # @return int  Comparison result (-1, 0, 1).
+    #
+    _compare: func(a, b) {
+        if (isnum(a)) {
+            if (isnum(b)) {
+                return a - b; # both numbers
+            }
+
+            return -1; # a number, b not
+        }
+
+        if (isnum(b)) {
+            return 1; # b number, a not
+        }
+
+        # both not numbers (strings)
+        return cmp(me._toLower(a), me._toLower(b));
     },
 
     #

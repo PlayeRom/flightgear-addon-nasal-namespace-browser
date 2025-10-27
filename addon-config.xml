@@ -37,6 +37,9 @@ along with FlightGear.  If not, see <http://www.gnu.org/licenses/>.
                     <func type="bool">true</func>
                     <nil type="bool">true</nil>
                 </filters>
+                <options>
+                    <sort-by-type type="bool">false</sort-by-type>
+                </options>
             </org.flightgear.addons.NasalNsBrowser>
         </by-id>
     </addons>
