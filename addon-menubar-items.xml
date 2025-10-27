@@ -21,11 +21,9 @@
     <menubar-items>
         <menu>
             <label>Nasal Browser</label>
-            <enabled type="bool">true</enabled>
 
             <item>
                 <label>Open Browser...</label>
-                <name>nasal-browser-addon-main</name>
                 <binding>
                     <command>nasal</command>
                     <script><![CDATA[
@@ -36,7 +34,6 @@
 
             <item>
                 <label>Filters...</label>
-                <name>nasal-browser-addon-filters</name>
                 <binding>
                     <command>nasal</command>
                     <script><![CDATA[
@@ -46,6 +43,11 @@
             </item>
 
             <!-- <item>
+                <label>===========================</label>
+                <enabled type="bool">false</enabled>
+            </item>
+
+            <item>
                 <label>Open Old Browser...</label>
                 <name>nasal-browser-addon-old</name>
                 <binding>
