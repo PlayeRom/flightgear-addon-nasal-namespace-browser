@@ -17,7 +17,6 @@ var NasalBrowserDialog = {
     # Constants:
     #
     PADDING: 10,
-    TIMER_DELAY: 0.2,
 
     #
     # Constructor.
@@ -41,22 +40,11 @@ var NasalBrowserDialog = {
             ],
         };
 
-        obj._filterNodes = {};
-        obj._addonNodePath = g_Addon.node.getPath();
+        obj._filters = Filters.new(Callback.new(obj._updateFilters, obj));
+        obj._nsCollection = NsCollection.new(obj._filters);
+        obj._nsPath = NsPath.new();
 
-        foreach (var type; FiltersDialog.TYPES) {
-            obj._filterNodes[type] = props.globals.getNode(obj._addonNodePath ~ "/filters/" ~ type);
-        }
-
-        obj._filterTimer = Timer.make(me.TIMER_DELAY, obj, obj._filterCallback);
-
-        obj._optionSortByType = props.globals.getNode(obj._addonNodePath ~ "/options/sort-by-type");
-
-        obj._items = globals;
-        obj._history = [];
-        obj._path = [];
         obj._widgets = [];
-        obj._resetPath();
         obj._foundIndex = nil;
 
         var scrollMargins = {
@@ -84,9 +72,6 @@ var NasalBrowserDialog = {
 
         obj._keyActions();
 
-        obj._listeners = Listeners.new();
-        obj._setListeners();
-
         return obj;
     },
 
@@ -97,50 +82,17 @@ var NasalBrowserDialog = {
     # @override TransientDialog
     #
     del: func {
+        me._filters.del();
+
         call(TransientDialog.del, [], me);
     },
 
     #
-    # Set listeners.
+    # Callback function called when filters or options are changed.
     #
     # @return void
     #
-    _setListeners: func() {
-        foreach (var type; FiltersDialog.TYPES) {
-            me._listeners.add(
-                node: me._filterNodes[type],
-                code: func me._handleFilterListener(),
-                type: Listeners.ON_CHANGE_ONLY,
-            );
-        }
-
-        me._listeners.add(
-            node: me._optionSortByType,
-            code: func me._displayNamespaces(),
-            type: Listeners.ON_CHANGE_ONLY,
-        );
-    },
-
-    #
-    # Use a timer to delay screen refresh when multiple filters change their
-    # state "simultaneously" (within a very short time interval).
-    #
-    # @return void
-    #
-    _handleFilterListener: func() {
-        me._filterTimer.isRunning
-            ? me._filterTimer.restart(me.TIMER_DELAY)
-            : me._filterTimer.start();
-    },
-
-    #
-    # Filter timer callback.
-    #
-    # @return void
-    #
-    _filterCallback: func() {
-        me._filterTimer.stop();
-
+    _updateFilters: func() {
         me._displayNamespaces();
     },
 
@@ -176,7 +128,7 @@ var NasalBrowserDialog = {
         hBoxCtrl.addStretch(1);
 
         me._pathLabel = canvas.gui.widgets.Label.new(me._group)
-            .setText(me._getPath());
+            .setText(me._nsPath.get());
 
         var vBox = canvas.VBoxLayout.new();
         vBox.addItem(hBoxCtrl);
@@ -189,25 +141,16 @@ var NasalBrowserDialog = {
     # @return void
     #
     _handleBackButton: func() {
-        var prev = nil;
-        if (size(me._history)) {
-            prev = pop(me._history);
-        }
+        var prev = me._nsCollection.popHistory();
 
-        if (size(me._history)) {
-            pop(me._path);
-
-            me._items = prev == nil
-                ? globals
-                : prev.item;
+        if (me._nsCollection.getHistorySize()) {
+            me._nsPath.pop();
         } else {
-            me._items = globals;
-            me._resetPath();
-            me._history = [];
+            me._nsPath.reset();
             me._backBtn.setEnabled(false);
         }
 
-        me._pathLabel.setText(me._getPath());
+        me._pathLabel.setText(me._nsPath.get());
 
         me._displayNamespaces();
 
@@ -312,7 +255,7 @@ var NasalBrowserDialog = {
         Profiler.start("_displayNamespaces");
 
         me._handleScrollLayoutStretch(func {
-            var children = me._getSortedChildren();
+            var children = me._nsCollection.getSortedChildren();
 
             var widgetsSize = size(me._widgets);
             var childrenSize = size(children);
@@ -351,165 +294,6 @@ var NasalBrowserDialog = {
         callback();
 
         me._scrollLayout.addStretch(1);
-    },
-
-    #
-    # @return vector  Array of {key, value} items allowed by filters and sorted.
-    #
-    _getSortedChildren: func() {
-        var children = [];
-
-        var processFunc = me._getProcessChildrenFunc();
-        if (processFunc != nil) {
-            call(processFunc, [func(key, value) {
-                append(children, {
-                    key: key,
-                    value: value,
-                });
-            }], me);
-        }
-
-        return me._sortElements(children);
-    },
-
-    #
-    # @return func|nil  Function to process children of current `me._items`.
-    #
-    _getProcessChildrenFunc: func() {
-        if (ishash(me._items)) return me._getChildrenForHash;
-        if (isvec(me._items))  return me._getChildrenForVector;
-
-        return nil;
-    },
-
-    #
-    # Get allowed children of hash by calling `callback` function for each.
-    #
-    # @param  func  callback  Function to call for each allowed child: func(key, value).
-    # @return void
-    #
-    _getChildrenForHash: func(callback) {
-        var hasArg = false;
-
-        foreach (var key; keys(me._items)) {
-            if ((key == "arg" and hasArg) or !me._isAllowedByFilters(me._items[key])) {
-                continue;
-            }
-
-            if (key == "arg") {
-                # Add "arg" only once
-                hasArg = true;
-            }
-
-            callback(key, me._items[key]);
-        }
-    },
-
-    #
-    # Get allowed children of vector by calling `callback` function for each.
-    #
-    # @param  func  callback  Function to call for each allowed child: func(key, value).
-    # @return void
-    #
-    _getChildrenForVector: func(callback) {
-        forindex (var i; me._items) {
-            if (!me._isAllowedByFilters(me._items[i])) {
-                continue;
-            }
-
-            callback(i, me._items[i]);
-        }
-    },
-
-    #
-    # Sort vector by key or by type and then by key.
-    #
-    # @param  vector  items
-    # @return vector  Sorted array of {key, value} items.
-    #
-    _sortElements: func(items) {
-        if (me._optionSortByType.getBoolValue()) {
-            # Sort by type first, then by key
-            return sort(items, func(a, b) {
-                return me._compareByType(a, b)
-                    or me._compareByKey(a, b);
-            });
-        }
-
-        # Sorty by key only
-        return sort(items, func(a, b) me._compareByKey(a, b));
-    },
-
-    #
-    # Compare two hashes by `keys` element.
-    #
-    # @param  hash  a
-    # @param  hash  b
-    # @return int  Comparison result (-1, 0, 1).
-    #
-    _compareByKey: func(a, b) {
-        return me._compare(a.key, b.key);
-    },
-
-    #
-    # Compare two hashes by type of `value` element.
-    #
-    # @param  hash  a
-    # @param  hash  b
-    # @return int  Comparison result (-1, 0, 1).
-    #
-    _compareByType: func(a, b) {
-        return cmp(typeof(a.value), typeof(b.value));
-    },
-
-    #
-    # @param  mixed  value
-    # @return bool
-    #
-    _isAllowedByFilters: func(value) {
-        var type = typeof(value);
-
-        if (contains(me._filterNodes, type)) {
-            return me._filterNodes[type].getBoolValue();
-        }
-
-        return true;
-    },
-
-    #
-    # @param  scalar  scalar
-    # @return string Return string converted to lower case letters.
-    #
-    _toLower: func(scalar) {
-        if (isstr(scalar)) {
-            return string.lc(scalar);
-        }
-
-        return scalar;
-    },
-
-    #
-    # Compare two scalar values for sort function.
-    #
-    # @param  scalar  a
-    # @param  scalar  b
-    # @return int  Comparison result (-1, 0, 1).
-    #
-    _compare: func(a, b) {
-        if (isnum(a)) {
-            if (isnum(b)) {
-                return a - b; # both numbers
-            }
-
-            return -1; # a number, b not
-        }
-
-        if (isnum(b)) {
-            return 1; # b number, a not
-        }
-
-        # both not numbers (strings)
-        return cmp(me._toLower(a), me._toLower(b));
     },
 
     #
@@ -568,63 +352,27 @@ var NasalBrowserDialog = {
     #
     # Handle click ">" button.
     #
+    # @param  int  index
     # @return void
     #
     _goToNamespace: func(index) {
-        append(me._history, {
-            item: me._items,
-            scrollX: me._scrollArea._content_pos[0],
-            scrollY: me._scrollArea._content_pos[1],
-        });
+        me._nsCollection.pushHistory(
+            scrollPos: me._scrollArea._content_pos,
+            newItems: me._widgets[index].childValue,
+        );
 
-        me._items = me._widgets[index].childValue;
         me._backBtn.setEnabled(true);
 
-        append(me._path, {
-            name: me._widgets[index].childId,
-            type: typeof(me._widgets[index].childValue),
-        });
+        me._nsPath.append(
+            me._widgets[index].childId,
+            typeof(me._widgets[index].childValue),
+        );
 
-        me._pathLabel.setText(me._getPath());
+        me._pathLabel.setText(me._nsPath.get());
 
         me._displayNamespaces();
 
         me._scrollArea.scrollTo(0, 0);
-    },
-
-    #
-    # Get path as string.
-    #
-    # @return string
-    #
-    _getPath: func {
-        var result = "";
-        forindex (var i; me._path) {
-            var item = me._path[i];
-            var type = i > 0 ? me._path[i - 1].type : nil;
-
-            if (type == nil) {
-                result ~= item.name;
-            } elsif (type == "vector") {
-                result ~= "[" ~ item.name ~ "]";
-            } else {
-                result ~= "." ~ item.name;
-            }
-        }
-
-        return result;
-    },
-
-    #
-    # Reset path to `globals` hash.
-    #
-    # @return void
-    #
-    _resetPath: func {
-        me._path = [{
-            name: "globals",
-            type: "hash",
-        }];
     },
 
     #
