@@ -389,7 +389,9 @@ var NasalBrowserDialog = {
 
         if (type == 'scalar') {
             return id ~ " = " ~ me._printScalarValue(value);
-        } elsif (type == 'hash')   {
+        }
+
+        if (type == 'hash')   {
             var val = "";
             if (isa(value, props.Node)) {
                 val = value.getValue();
@@ -399,15 +401,21 @@ var NasalBrowserDialog = {
             }
 
             return id ~ " = {}" ~ val ~ " (keys: " ~ size(value) ~ ")";
-        } elsif (type == 'vector') {
-            return id ~ " = [] (items: " ~ size(value) ~ ")";
-        } elsif (type == 'nil')    {
-            return id ~ " = nil";
-        } elsif (type == 'ghost')  {
-            return id ~ " = <ghost " ~ ghosttype(value) ~ ">";
-        } else                     {
-            return id ~ " = <" ~ type ~ ">"; # func
         }
+
+        if (type == 'vector') {
+            return id ~ " = [] (items: " ~ size(value) ~ ")";
+        }
+
+        if (type == 'ghost')  {
+            return id ~ " = <ghost " ~ ghosttype(value) ~ ">";
+        }
+
+        if (type == 'nil')    {
+            return id ~ " = nil";
+        }
+
+        return id ~ " = <" ~ type ~ ">"; # func
     },
 
     #
