@@ -45,6 +45,8 @@ var FiltersDialog = {
             ],
         };
 
+        obj._widget = WidgetHelper.new(obj._group);
+
         obj._nodes = {};
         obj._checkboxes = {};
 
@@ -86,7 +88,7 @@ var FiltersDialog = {
             me._vbox.addItem(me._buildCheckboxRow(type));
         }
 
-        me._vbox.addItem(me._getButton("Select all", func {
+        me._vbox.addItem(me._widget.getButton("Select all", func {
             foreach (var type; me.TYPES) {
                 me._nodes[type].setBoolValue(true);
                 me._checkboxes[type].setChecked(true);
@@ -110,7 +112,7 @@ var FiltersDialog = {
     _buildCheckboxRow: func(type) {
         me._checkboxes[type] = me._getCheckbox(type, me._nodes[type]);
 
-        var btn = me._getButton("Only " ~ type)
+        var btn = me._widget.getButton("Only " ~ type)
             .setFixedSize(90, 26);
 
         func {
@@ -137,22 +139,8 @@ var FiltersDialog = {
     # @return ghost  CheckBox widget.
     #
     _getCheckbox: func(label, node) {
-        return canvas.gui.widgets.CheckBox.new(me._group)
-            .setText(label)
-            .setChecked(node.getBoolValue())
-            .listen("toggled", func(e) {
-                node.setBoolValue(e.detail.checked ? true : false);
-            });
-    },
-
-    #
-    # @param  string  label
-    # @param  func  callback
-    # @return ghost  Button widget.
-    #
-    _getButton: func(label, callback = func) {
-        return canvas.gui.widgets.Button.new(me._group)
-            .setText(label)
-            .listen("clicked", callback);
+        return me._widget.getCheckBox(label, node.getBoolValue(), func(e) {
+            node.setBoolValue(e.detail.checked ? true : false);
+        });
     },
 };

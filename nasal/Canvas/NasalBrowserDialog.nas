@@ -59,6 +59,9 @@ var NasalBrowserDialog = {
             context: obj._scrollArea,
         );
 
+        obj._widgetScroll = WidgetHelper.new(obj._scrollContent);
+        obj._widgetGroup = WidgetHelper.new(obj._group);
+
         obj._vbox.setContentsMargins(me.PADDING, me.PADDING, 0, 0);
         obj._vbox.addItem(obj._drawTopBar());
         obj._vbox.addSpacing(me.PADDING);
@@ -100,25 +103,15 @@ var NasalBrowserDialog = {
     # @return ghost  Canvas layout.
     #
     _drawTopBar: func {
-        me._backBtn = canvas.gui.widgets.Button.new(me._group)
-            .setText("<")
-            .setFixedSize(28, 28)
-            .listen("clicked", func me._handleBackButton())
+        me._backBtn = me._widgetGroup.getButton("<", 28, func me._handleBackButton())
             .setEnabled(false);
 
-        var refreshBtn = canvas.gui.widgets.Button.new(me._group)
-            .setText("Refresh")
-            .listen("clicked", func me._displayNamespaces());
+        var refreshBtn = me._widgetGroup.getButton("Refresh", func me._displayNamespaces());
 
-        var filtersBtn = canvas.gui.widgets.Button.new(me._group)
-            .setText("Filters...")
-            .listen("clicked", func FiltersDialog.new());
+        var filtersBtn = me._widgetGroup.getButton("Filters...", func FiltersDialog.new());
 
-        var inputSearch = canvas.gui.widgets.LineEdit.new(me._group)
-            .setPlaceholder("Search...")
-            .setText("")
-            .setFixedSize(200, 28)
-            .listen("editingFinished", func(e) me._searchKey(e.detail.text));
+        var inputSearch = me._widgetGroup.getLineEdit("", 200, func(e) me._searchKey(e.detail.text))
+            .setPlaceholder("Search...");
 
         var hBoxCtrl = canvas.HBoxLayout.new();
         hBoxCtrl.addItem(me._backBtn);
@@ -127,8 +120,7 @@ var NasalBrowserDialog = {
         hBoxCtrl.addItem(inputSearch);
         hBoxCtrl.addStretch(1);
 
-        me._pathLabel = canvas.gui.widgets.Label.new(me._group)
-            .setText(me._nsPath.get());
+        me._pathLabel = me._widgetGroup.getLabel(me._nsPath.get());
 
         var vBox = canvas.VBoxLayout.new();
         vBox.addItem(hBoxCtrl);
@@ -188,7 +180,7 @@ var NasalBrowserDialog = {
 
         me._foundIndex = me._searchInternal(search, i, widgetsSize);
 
-        if (foundIndexTmp != nil and foundIndexTmp > 0 and me._foundIndex == nil) {
+        if (foundIndexTmp != nil and me._foundIndex == nil) {
             # Not found, but the search did not start from the beginning,
             # so the search should be performed again from the beginning.
             me._foundIndex = me._searchInternal(search, 0, widgetsSize);
@@ -325,8 +317,11 @@ var NasalBrowserDialog = {
         }
 
         # Add new widgets
-        var label = me._getLabel(me._getText(id, value));
-        var button = me._getButton(">").setVisible(isClickable).setEnabled(isBtnEnable);
+        var label = me._widgetScroll.getLabel(me._getText(id, value));
+        var button = me._widgetScroll.getButton(">")
+            .setVisible(isClickable)
+            .setEnabled(isBtnEnable)
+            .setFixedSize(26, 26);
 
         func {
             var tmpIndex = index;
@@ -428,25 +423,6 @@ var NasalBrowserDialog = {
         }
 
         return value;
-    },
-
-    #
-    # @param  string  text  Label text.
-    # @return ghost  Label widget.
-    #
-    _getLabel: func(text) {
-        return canvas.gui.widgets.Label.new(me._scrollContent)
-            .setText(text);
-    },
-
-    #
-    # @param  string  text  Label of button.
-    # @return ghost  Button widget.
-    #
-    _getButton: func(text) {
-        return canvas.gui.widgets.Button.new(me._scrollContent)
-            .setText(text)
-            .setFixedSize(26, 26);
     },
 
     #

@@ -33,11 +33,6 @@
             </item>
 
             <!-- <item>
-                <label>===========================</label>
-                <enabled type="bool">false</enabled>
-            </item>
-
-            <item>
                 <label>Legacy Browser v.1...</label>
                 <name>nasal-browser-addon-old</name>
                 <binding>
@@ -47,6 +42,21 @@
                     ]]></script>
                 </binding>
             </item> -->
+
+            <item>
+                <label>-------------</label>
+                <enabled type="bool">false</enabled>
+            </item>
+            <item>
+                <label>About...</label>
+                <name>which-runway-addon-about</name>
+                <binding>
+                    <command>nasal</command>
+                    <script><![CDATA[
+                        globals['__addon[org.flightgear.addons.NasalNsBrowser]__'].g_AboutDialog.show();
+                    ]]></script>
+                </binding>
+            </item>
 
             <!--
             FOR DEVELOPMENT ONLY!
