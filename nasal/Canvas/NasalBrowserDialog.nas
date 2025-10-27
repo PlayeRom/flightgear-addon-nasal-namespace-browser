@@ -618,9 +618,11 @@ var NasalBrowserDialog = {
     # @return void
     #
     _handleScrollKey: func(isArrow, isUp) {
-        var dy = isArrow
-            ? 20
-            : ScrollAreaHelper.getScrollPageHeight(me._scrollArea);
+        var dy = ScrollAreaHelper.getScrollPageHeight(me._scrollArea);
+
+        if (isArrow) {
+            dy /= 20;
+        }
 
         if (isUp) {
             dy = -dy;
