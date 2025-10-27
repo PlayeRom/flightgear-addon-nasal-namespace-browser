@@ -57,6 +57,7 @@ var NasalBrowserDialog = {
         obj._path = [];
         obj._widgets = [];
         obj._resetPath();
+        obj._foundIndex = nil;
 
         var scrollMargins = {
             left  : 0,
@@ -161,14 +162,21 @@ var NasalBrowserDialog = {
             .setText("Filters...")
             .listen("clicked", func FiltersDialog.new());
 
-        me._pathLabel = canvas.gui.widgets.Label.new(me._group)
-            .setText(me._getPath());
+        var inputSearch = canvas.gui.widgets.LineEdit.new(me._group)
+            .setPlaceholder("Search...")
+            .setText("")
+            .setFixedSize(200, 28)
+            .listen("editingFinished", func(e) me._searchKey(e.detail.text));
 
         var hBoxCtrl = canvas.HBoxLayout.new();
         hBoxCtrl.addItem(me._backBtn);
         hBoxCtrl.addItem(refreshBtn);
         hBoxCtrl.addItem(filtersBtn);
+        hBoxCtrl.addItem(inputSearch);
         hBoxCtrl.addStretch(1);
+
+        me._pathLabel = canvas.gui.widgets.Label.new(me._group)
+            .setText(me._getPath());
 
         var vBox = canvas.VBoxLayout.new();
         vBox.addItem(hBoxCtrl);
@@ -206,6 +214,93 @@ var NasalBrowserDialog = {
         if (prev != nil) {
             me._scrollArea.scrollTo(prev.scrollX, prev.scrollY);
         }
+    },
+
+    #
+    # @param  string  search  Text to search.
+    # @return void
+    #
+    _searchKey: func(search) {
+        var widgetsSize = size(me._widgets);
+
+        var i = 0;
+        var foundIndexTmp = me._foundIndex;
+        if (foundIndexTmp != nil) {
+            i = foundIndexTmp + 1;
+
+            if (foundIndexTmp < widgetsSize) {
+                # Back color to default
+                me._widgets[foundIndexTmp].layout.itemAt(0)
+                    .setColor(canvas.style.getColor("text_color"));
+            }
+        }
+
+        me._foundIndex = nil;
+
+        if (search == nil or search == "") {
+            return;
+        }
+
+        search = string.lc(search);
+
+        me._foundIndex = me._searchInternal(search, i, widgetsSize);
+
+        if (foundIndexTmp != nil and foundIndexTmp > 0 and me._foundIndex == nil) {
+            # Not found, but the search did not start from the beginning,
+            # so the search should be performed again from the beginning.
+            me._foundIndex = me._searchInternal(search, 0, widgetsSize);
+        }
+    },
+
+    #
+    # @param  string  search  Text to search.
+    # @param  int  i  Initial index.
+    # @param  int  widgetsSize
+    # @return int|nil  Index of found text or nil if not found.
+    #
+    _searchInternal: func(search, i, widgetsSize) {
+        for (; i < widgetsSize; i += 1) {
+            var layout = me._widgets[i].layout;
+            var label = layout.itemAt(0);
+
+            # TODO: Use the Label widget method when available (label.getText()):
+            var labelText = string.lc(label._view._text.getText());
+
+            if (find(search, labelText) >= 0) {
+                if (!layout.isVisible()) {
+                    # If the layout is invisible, it means that we have already searched all visible ones,
+                    # so we have to exit.
+                    return nil;
+                }
+
+                var (x, y, w, h) = label.geometry();
+
+                var scale = me._getScrollHeightScale();
+
+                me._scrollArea.vertScrollBarTo(y * scale);
+
+                # Set color to red of found label
+                label.setColor([1, 0, 0]);
+
+                return i;
+            }
+        }
+
+        return nil;
+    },
+
+    #
+    # @return double
+    #
+    _getScrollHeightScale: func() {
+        # TODO: use ScrollArea methods as they become available.
+        var scrollTrackHeight = me._scrollArea._scroller_delta[1];
+        var contentHeight     = me._scrollArea._max_scroll[1];
+        if (contentHeight == 0) {
+            contentHeight = 1; # prevent divide by 0
+        }
+
+        return scrollTrackHeight / contentHeight;
     },
 
     #
@@ -430,11 +525,17 @@ var NasalBrowserDialog = {
 
         if (index < widgetsSize) {
             # Modify existing widgets
-            me._widgets[index].layout.itemAt(0).setText(me._getText(id, value)); # label
-            me._widgets[index].layout.itemAt(1).setVisible(isClickable).setEnabled(isBtnEnable); # button
-            me._widgets[index].layout.setVisible(true);
-            me._widgets[index].childId = id;
-            me._widgets[index].childValue = value;
+            var item = me._widgets[index];
+            var label = item.layout.itemAt(0);
+
+            label.setText(me._getText(id, value));
+            label.setColor(canvas.style.getColor("text_color"));
+
+            item.layout.itemAt(1).setVisible(isClickable).setEnabled(isBtnEnable); # button
+            item.layout.setVisible(true);
+
+            item.childId = id;
+            item.childValue = value;
 
             return;
         }
