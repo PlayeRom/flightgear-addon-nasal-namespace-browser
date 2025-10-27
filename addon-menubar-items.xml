@@ -32,16 +32,6 @@
                 </binding>
             </item>
 
-            <item>
-                <label>Filters...</label>
-                <binding>
-                    <command>nasal</command>
-                    <script><![CDATA[
-                        globals['__addon[org.flightgear.addons.NasalNsBrowser]__'].FiltersDialog.new();
-                    ]]></script>
-                </binding>
-            </item>
-
             <!-- <item>
                 <label>===========================</label>
                 <enabled type="bool">false</enabled>

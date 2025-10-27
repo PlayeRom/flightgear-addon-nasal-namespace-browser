@@ -59,10 +59,10 @@ var NasalBrowserDialog = {
         obj._resetPath();
 
         var scrollMargins = {
-            left  : me.PADDING,
-            top   : me.PADDING,
+            left  : 0,
+            top   : 0,
             right : 2,
-            bottom: 0,
+            bottom: 2,
         };
 
         obj._scrollArea = ScrollAreaHelper.create(obj._group, scrollMargins);
@@ -70,7 +70,7 @@ var NasalBrowserDialog = {
             context: obj._scrollArea,
         );
 
-        obj._vbox.addSpacing(me.PADDING);
+        obj._vbox.setContentsMargins(me.PADDING, me.PADDING, 0, 0);
         obj._vbox.addItem(obj._drawTopBar());
         obj._vbox.addSpacing(me.PADDING);
         obj._vbox.addItem(obj._scrollArea, 1); # 2nd param = stretch
@@ -78,8 +78,8 @@ var NasalBrowserDialog = {
         obj._scrollLayout = canvas.VBoxLayout.new();
         obj._scrollArea.setLayout(obj._scrollLayout);
 
-        obj._displayRootCounter = 0;
-        obj._displayRoot();
+        obj._alreadyDisplayed = false;
+        obj._displayNamespaces();
 
         obj._keyActions();
 
@@ -115,7 +115,7 @@ var NasalBrowserDialog = {
 
         me._listeners.add(
             node: me._optionSortByType,
-            code: func me._displayRoot(),
+            code: func me._displayNamespaces(),
             type: Listeners.ON_CHANGE_ONLY,
         );
     },
@@ -140,7 +140,7 @@ var NasalBrowserDialog = {
     _filterCallback: func() {
         me._filterTimer.stop();
 
-        me._displayRoot();
+        me._displayNamespaces();
     },
 
     #
@@ -149,88 +149,113 @@ var NasalBrowserDialog = {
     _drawTopBar: func {
         me._backBtn = canvas.gui.widgets.Button.new(me._group)
             .setText("<")
-            .setFixedSize(26, 26)
-            .listen("clicked", func {
-                var prev = nil;
-                if (size(me._history)) {
-                    prev = pop(me._history);
-                }
-
-                if (size(me._history)) {
-                    pop(me._path);
-
-                    me._items = prev == nil
-                        ? globals
-                        : prev.item;
-                } else {
-                    me._items = globals;
-                    me._resetPath();
-                    me._history = [];
-                    me._backBtn.setEnabled(false);
-                }
-
-                me._pathLabel.setText(me._getPath());
-
-                me._displayRoot();
-
-                if (prev != nil) {
-                    me._scrollArea.scrollTo(prev.scrollX, prev.scrollY);
-                }
-            })
+            .setFixedSize(28, 28)
+            .listen("clicked", func me._handleBackButton())
             .setEnabled(false);
 
-        me._refreshBtn = canvas.gui.widgets.Button.new(me._group)
-            .setText("R")
-            .setFixedSize(26, 26)
-            .listen("clicked", func me._displayRoot());
+        var refreshBtn = canvas.gui.widgets.Button.new(me._group)
+            .setText("Refresh")
+            .listen("clicked", func me._displayNamespaces());
+
+        var filtersBtn = canvas.gui.widgets.Button.new(me._group)
+            .setText("Filters...")
+            .listen("clicked", func FiltersDialog.new());
 
         me._pathLabel = canvas.gui.widgets.Label.new(me._group)
             .setText(me._getPath());
 
-        var hBox = canvas.HBoxLayout.new();
-        hBox.addSpacing(me.PADDING);
-        hBox.addItem(me._backBtn);
-        hBox.addItem(me._refreshBtn);
-        hBox.addItem(me._pathLabel);
-        hBox.addStretch(1);
+        var hBoxCtrl = canvas.HBoxLayout.new();
+        hBoxCtrl.addItem(me._backBtn);
+        hBoxCtrl.addItem(refreshBtn);
+        hBoxCtrl.addItem(filtersBtn);
+        hBoxCtrl.addStretch(1);
 
-        return hBox;
+        var vBox = canvas.VBoxLayout.new();
+        vBox.addItem(hBoxCtrl);
+        vBox.addItem(me._pathLabel);
+
+        return vBox;
     },
 
     #
     # @return void
     #
-    _displayRoot: func {
-        Profiler.start("_displayRoot");
+    _handleBackButton: func() {
+        var prev = nil;
+        if (size(me._history)) {
+            prev = pop(me._history);
+        }
 
-        if (me._displayRootCounter > 0) {
+        if (size(me._history)) {
+            pop(me._path);
+
+            me._items = prev == nil
+                ? globals
+                : prev.item;
+        } else {
+            me._items = globals;
+            me._resetPath();
+            me._history = [];
+            me._backBtn.setEnabled(false);
+        }
+
+        me._pathLabel.setText(me._getPath());
+
+        me._displayNamespaces();
+
+        if (prev != nil) {
+            me._scrollArea.scrollTo(prev.scrollX, prev.scrollY);
+        }
+    },
+
+    #
+    # Display current namespaces list.
+    #
+    # @return void
+    #
+    _displayNamespaces: func {
+        Profiler.start("_displayNamespaces");
+
+        me._handleScrollLayoutStretch(func {
+            var children = me._getSortedChildren();
+
+            var widgetsSize = size(me._widgets);
+            var childrenSize = size(children);
+            var loopSize = widgetsSize > childrenSize ? widgetsSize : childrenSize;
+
+            for (var i = 0; i < loopSize; i += 1) {
+                if (i < childrenSize) {
+                    var child = children[i];
+                    me._displayItem(i, widgetsSize, child.key, child.value);
+                    continue;
+                }
+
+                # Hide rest of widgets
+                me._widgets[i].layout.itemAt(1).setVisible(false); # button
+                me._widgets[i].layout.setVisible(false);
+            }
+        });
+
+        Profiler.stop();
+    },
+
+    #
+    # Handle adding/removing stretch at the end of scroll layout.
+    #
+    # @param  func  callback
+    # @return void
+    #
+    _handleScrollLayoutStretch: func(callback) {
+        if (me._alreadyDisplayed) {
             var lastIndex = me._scrollLayout.count() - 1;
             me._scrollLayout.takeAt(lastIndex); # remove last stretch
         }
 
-        me._displayRootCounter += 1;
+        me._alreadyDisplayed = true;
 
-        var children = me._getSortedChildren();
-
-        var widgetsSize = size(me._widgets);
-        var childrenSize = size(children);
-        var loopSize = widgetsSize > childrenSize ? widgetsSize : childrenSize;
-
-        for (var i = 0; i < loopSize; i += 1) {
-            if (i < childrenSize) {
-                var child = children[i];
-                me._displayItem(i, widgetsSize, child.key, child.value);
-                continue;
-            }
-
-            # Hide rest of widgets
-            me._widgets[i].layout.itemAt(1).setVisible(false); # button
-            me._widgets[i].layout.setVisible(false);
-        }
+        callback();
 
         me._scrollLayout.addStretch(1);
-
-        Profiler.stop();
     },
 
     #
@@ -461,7 +486,7 @@ var NasalBrowserDialog = {
 
         me._pathLabel.setText(me._getPath());
 
-        me._displayRoot();
+        me._displayNamespaces();
 
         me._scrollArea.scrollTo(0, 0);
     },
