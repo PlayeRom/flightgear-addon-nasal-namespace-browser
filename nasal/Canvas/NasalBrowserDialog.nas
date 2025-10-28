@@ -43,9 +43,7 @@ var NasalBrowserDialog = {
         obj._filters = Filters.new(Callback.new(obj._updateFilters, obj));
         obj._nsCollection = NsCollection.new(obj._filters);
         obj._nsPath = NsPath.new();
-
-        obj._widgets = [];
-        obj._foundIndex = nil;
+        obj._widgets = WidgetCollection.new();
 
         var scrollMargins = {
             left  : 0,
@@ -156,86 +154,11 @@ var NasalBrowserDialog = {
     # @return void
     #
     _searchKey: func(search) {
-        var widgetsSize = size(me._widgets);
-
-        var i = 0;
-        var foundIndexTmp = me._foundIndex;
-        if (foundIndexTmp != nil) {
-            i = foundIndexTmp + 1;
-
-            if (foundIndexTmp < widgetsSize) {
-                # Back color to default
-                me._widgets[foundIndexTmp].layout.itemAt(0)
-                    .setColor(canvas.style.getColor("text_color"));
-            }
+        var posY = me._widgets.searchTextInLabel(search);
+        if (posY != nil) {
+            var scale = ScrollAreaHelper.getScrollHeightScale(me._scrollArea);
+            me._scrollArea.vertScrollBarTo(posY * scale);
         }
-
-        me._foundIndex = nil;
-
-        if (search == nil or search == "") {
-            return;
-        }
-
-        search = string.lc(search);
-
-        me._foundIndex = me._searchInternal(search, i, widgetsSize);
-
-        if (foundIndexTmp != nil and me._foundIndex == nil) {
-            # Not found, but the search did not start from the beginning,
-            # so the search should be performed again from the beginning.
-            me._foundIndex = me._searchInternal(search, 0, widgetsSize);
-        }
-    },
-
-    #
-    # @param  string  search  Text to search.
-    # @param  int  i  Initial index.
-    # @param  int  widgetsSize
-    # @return int|nil  Index of found text or nil if not found.
-    #
-    _searchInternal: func(search, i, widgetsSize) {
-        for (; i < widgetsSize; i += 1) {
-            var layout = me._widgets[i].layout;
-            var label = layout.itemAt(0);
-
-            # TODO: Use the Label widget method when available (label.getText()):
-            var labelText = string.lc(label._view._text.getText());
-
-            if (find(search, labelText) >= 0) {
-                if (!layout.isVisible()) {
-                    # If the layout is invisible, it means that we have already searched all visible ones,
-                    # so we have to exit.
-                    return nil;
-                }
-
-                var (x, y, w, h) = label.geometry();
-
-                var scale = me._getScrollHeightScale();
-
-                me._scrollArea.vertScrollBarTo(y * scale);
-
-                # Set color to red of found label
-                label.setColor([1, 0, 0]);
-
-                return i;
-            }
-        }
-
-        return nil;
-    },
-
-    #
-    # @return double
-    #
-    _getScrollHeightScale: func() {
-        # TODO: use ScrollArea methods as they become available.
-        var scrollTrackHeight = me._scrollArea._scroller_delta[1];
-        var contentHeight     = me._scrollArea._max_scroll[1];
-        if (contentHeight == 0) {
-            contentHeight = 1; # prevent divide by 0
-        }
-
-        return scrollTrackHeight / contentHeight;
     },
 
     #
@@ -249,7 +172,7 @@ var NasalBrowserDialog = {
         me._handleScrollLayoutStretch(func {
             var children = me._nsCollection.getSortedChildren();
 
-            var widgetsSize = size(me._widgets);
+            var widgetsSize = me._widgets.size();
             var childrenSize = size(children);
             var loopSize = widgetsSize > childrenSize ? widgetsSize : childrenSize;
 
@@ -261,8 +184,8 @@ var NasalBrowserDialog = {
                 }
 
                 # Hide rest of widgets
-                me._widgets[i].layout.itemAt(1).setVisible(false); # button
-                me._widgets[i].layout.setVisible(false);
+                me._widgets.getButtonByIndex(i).setVisible(false); # button
+                me._widgets.getLayout(i).setVisible(false);
             }
         });
 
@@ -298,26 +221,16 @@ var NasalBrowserDialog = {
     _displayItem: func(index, widgetsSize, id, value) {
         var isClickable = isvec(value) or ishash(value);
         var isBtnEnable = isClickable and size(value);
+        var labelText = me._getText(id, value);
 
         if (index < widgetsSize) {
             # Modify existing widgets
-            var item = me._widgets[index];
-            var label = item.layout.itemAt(0);
-
-            label.setText(me._getText(id, value));
-            label.setColor(canvas.style.getColor("text_color"));
-
-            item.layout.itemAt(1).setVisible(isClickable).setEnabled(isBtnEnable); # button
-            item.layout.setVisible(true);
-
-            item.childId = id;
-            item.childValue = value;
-
+            me._widgets.updateItem(index, labelText, id, value, isClickable, isBtnEnable);
             return;
         }
 
         # Add new widgets
-        var label = me._widgetScroll.getLabel(me._getText(id, value));
+        var label = me._widgetScroll.getLabel(labelText);
         var button = me._widgetScroll.getButton(">")
             .setVisible(isClickable)
             .setEnabled(isBtnEnable)
@@ -335,11 +248,7 @@ var NasalBrowserDialog = {
         hBox.addItem(button);
         hBox.addStretch(1);
 
-        append(me._widgets, {
-            layout: hBox,
-            childId: id,
-            childValue: value,
-        });
+        me._widgets.addItem(hBox, id, value);
 
         me._scrollLayout.addItem(hBox);
     },
@@ -351,17 +260,16 @@ var NasalBrowserDialog = {
     # @return void
     #
     _goToNamespace: func(index) {
+        var (childId, childValue) = me._widgets.getChildData(index);
+
         me._nsCollection.pushHistory(
             scrollPos: me._scrollArea._content_pos,
-            newItems: me._widgets[index].childValue,
+            newItems: childValue,
         );
 
         me._backBtn.setEnabled(true);
 
-        me._nsPath.append(
-            me._widgets[index].childId,
-            typeof(me._widgets[index].childValue),
-        );
+        me._nsPath.push(childId, typeof(childValue));
 
         me._pathLabel.setText(me._nsPath.get());
 

@@ -33,13 +33,13 @@ var NsPath = {
     },
 
     #
-    # Append new element to path.
+    # Push new element to path.
     #
     # @param  string  name  Namespace.
     # @param  string  type  Type of new element.
     # @return vector
     #
-    append: func(name, type) {
+    push: func(name, type) {
         return append(me._path, {
             name: name,
             type: type,

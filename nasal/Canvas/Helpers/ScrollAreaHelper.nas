@@ -75,4 +75,19 @@ var ScrollAreaHelper = {
         var visibleHeight = contentHeight - maxScroll;
         return (visibleHeight / maxScroll) * scrollerTrack;
     },
+
+    #
+    # @param  ghost  context  ScrollArea widget.
+    # @return double
+    #
+    getScrollHeightScale: func(context) {
+        # TODO: use ScrollArea methods as they become available.
+        var scrollTrackHeight = context._scroller_delta[1];
+        var contentHeight     = context._max_scroll[1];
+        if (contentHeight == 0) {
+            return scrollTrackHeight; # prevent divide by 0
+        }
+
+        return scrollTrackHeight / contentHeight;
+    },
 };
