@@ -68,11 +68,11 @@ var WidgetCollection = {
     # @param  string  label
     # @param  scalar  id
     # @param  mixed  value
-    # @param  bool  isClickable
+    # @param  bool  isBtnVisible
     # @param  bool  isBtnEnable
     # @return void
     #
-    updateItem: func(index, label, id, value, isClickable, isBtnEnable) {
+    updateItem: func(index, label, id, value, isBtnVisible, isBtnEnable) {
         var item = me._widgets[index];
 
         me.getLabelByLayout(item.layout)
@@ -80,7 +80,7 @@ var WidgetCollection = {
             .setColor(me.COLOR.DEFAULT);
 
         me.getButtonByLayout(item.layout)
-            .setVisible(isClickable)
+            .setVisible(isBtnVisible)
             .setEnabled(isBtnEnable);
 
         item.layout.setVisible(true);
