@@ -116,24 +116,28 @@ var FiltersDialog = {
         me._checkboxes[type] = me._getCheckbox(type, me._nodes[type]);
 
         var btn = me._widget.getButton("Only " ~ type)
-            .setFixedSize(90, 26);
-
-        func {
-            var tmpType = type;
-            btn.listen("clicked", func {
-                foreach (var subType; me.TYPES) {
-                    var isSelected = subType == tmpType;
-                    me._nodes[subType].setBoolValue(isSelected);
-                    me._checkboxes[subType].setChecked(isSelected);
-                }
-            });
-        }();
+            .setFixedSize(90, 26)
+            .listen("clicked", me._clickedCallback(type));
 
         var hBox = canvas.HBoxLayout.new();
         hBox.addItem(me._checkboxes[type]);
         hBox.addItem(btn);
 
         return hBox;
+    },
+
+    #
+    # @param  string  type
+    # @return func
+    #
+    _clickedCallback: func(type) {
+        return func {
+            foreach (var subType; me.TYPES) {
+                var isSelected = subType == type;
+                me._nodes[subType].setBoolValue(isSelected);
+                me._checkboxes[subType].setChecked(isSelected);
+            }
+        };
     },
 
     #

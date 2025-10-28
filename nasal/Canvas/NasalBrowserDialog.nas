@@ -234,14 +234,8 @@ var NasalBrowserDialog = {
         var button = me._widgetScroll.getButton(">")
             .setVisible(isClickable)
             .setEnabled(isBtnEnable)
-            .setFixedSize(26, 26);
-
-        func {
-            var tmpIndex = index;
-            button.listen("clicked", func {
-                me._goToNamespace(tmpIndex);
-            });
-        }();
+            .setFixedSize(26, 26)
+            .listen("clicked", me._clickedCallback(index));
 
         var hBox = canvas.HBoxLayout.new();
         hBox.addItem(label);
@@ -251,6 +245,14 @@ var NasalBrowserDialog = {
         me._widgets.addItem(hBox, id, value);
 
         me._scrollLayout.addItem(hBox);
+    },
+
+    #
+    # @param  int  index
+    # @return func
+    #
+    _clickedCallback: func(index) {
+        return func me._goToNamespace(index);
     },
 
     #
