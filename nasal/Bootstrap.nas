@@ -35,6 +35,11 @@ var g_Addon = nil;
 var g_VersionChecker = nil;
 
 #
+# Global object of filters dialog.
+#
+var g_FiltersDialog = nil;
+
+#
 # Global object of about dialog.
 #
 var g_AboutDialog = nil;
@@ -57,6 +62,7 @@ var Bootstrap = {
         g_VersionChecker = VersionChecker.make();
 
         me._delayCanvasLoading(func {
+            g_FiltersDialog = FiltersDialog.new();
             g_AboutDialog = AboutDialog.new();
 
             # Check the version at the end, because dialogs must first register
@@ -75,6 +81,10 @@ var Bootstrap = {
 
         if (g_VersionChecker) {
             g_VersionChecker.del();
+        }
+
+        if (g_FiltersDialog) {
+            g_FiltersDialog.del();
         }
 
         if (g_AboutDialog) {

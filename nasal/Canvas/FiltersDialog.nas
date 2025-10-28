@@ -36,7 +36,7 @@ var FiltersDialog = {
         var obj = {
             parents: [
                 FiltersDialog,
-                TransientDialog.new(
+                PersistentDialog.new(
                     width : 210,
                     height: 340,
                     title : "Nasal Browser Filters",
@@ -44,6 +44,9 @@ var FiltersDialog = {
                 ),
             ],
         };
+
+        call(PersistentDialog.setChild, [obj, FiltersDialog], obj.parents[1]); # Let the parent know who their child is.
+        call(PersistentDialog.setPositionOnCenter, [], obj.parents[1]);
 
         obj._widget = WidgetHelper.new(obj._group);
 
@@ -70,7 +73,7 @@ var FiltersDialog = {
     # @override TransientDialog
     #
     del: func {
-        call(TransientDialog.del, [], me);
+        call(PersistentDialog.del, [], me);
     },
 
     #

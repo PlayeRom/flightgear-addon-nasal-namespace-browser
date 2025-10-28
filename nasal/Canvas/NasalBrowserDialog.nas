@@ -106,7 +106,7 @@ var NasalBrowserDialog = {
 
         var refreshBtn = me._widgetGroup.getButton("Refresh", func me._displayNamespaces());
 
-        var filtersBtn = me._widgetGroup.getButton("Filters...", func FiltersDialog.new());
+        var filtersBtn = me._widgetGroup.getButton("Filters...", func g_FiltersDialog.show());
 
         var inputSearch = me._widgetGroup.getLineEdit("", 200, func(e) me._searchKey(e.detail.text))
             .setPlaceholder("Search...");
