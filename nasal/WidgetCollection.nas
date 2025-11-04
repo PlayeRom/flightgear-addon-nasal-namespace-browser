@@ -16,10 +16,10 @@ var WidgetCollection = {
     #
     # Constants:
     #
-    LABEL_INDEX: 0,
-    BUTTON_INDEX: 1,
+    _LABEL_INDEX: 0,
+    _BUTTON_INDEX: 1,
 
-    COLOR: {
+    _COLOR: {
         DEFAULT: canvas.style.getColor("text_color"),
         RED: [0.8, 0, 0],
     },
@@ -77,7 +77,7 @@ var WidgetCollection = {
 
         me.getLabelByLayout(item.layout)
             .setText(label)
-            .setColor(me.COLOR.DEFAULT);
+            .setColor(me._COLOR.DEFAULT);
 
         me.getButtonByLayout(item.layout)
             .setVisible(isBtnVisible)
@@ -118,7 +118,7 @@ var WidgetCollection = {
     # @return ghost  Canvas label widget.
     #
     getLabelByLayout: func(layout) {
-        return layout.itemAt(me.LABEL_INDEX);
+        return layout.itemAt(me._LABEL_INDEX);
     },
 
     #
@@ -134,7 +134,7 @@ var WidgetCollection = {
     # @return ghost  Canvas button widget.
     #
     getButtonByLayout: func(layout) {
-        return layout.itemAt(me.BUTTON_INDEX);
+        return layout.itemAt(me._BUTTON_INDEX);
     },
 
     #
@@ -162,7 +162,7 @@ var WidgetCollection = {
 
             if (foundIndexTmp < widgetsSize) {
                 # Back color to default
-                me.getLabelByIndex(foundIndexTmp).setColor(me.COLOR.DEFAULT);
+                me.getLabelByIndex(foundIndexTmp).setColor(me._COLOR.DEFAULT);
             }
         }
 
@@ -209,7 +209,7 @@ var WidgetCollection = {
                 var (x, y, w, h) = label.geometry();
 
                 # Set color to red of found label
-                label.setColor(me.COLOR.RED);
+                label.setColor(me._COLOR.RED);
 
                 me._foundIndex = i;
 
