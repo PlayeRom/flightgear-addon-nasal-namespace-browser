@@ -1,7 +1,12 @@
-# Legacy version of Nasal Browser. Written by "Philosopher'.
-# https://web.archive.org/web/20210726130630/http://codepad.org/14koLKeg
-
-var NasalBrowserV1 = {
+#
+# Legacy version of Nasal Browser. Written by "Philosopher" in 2013.
+# Original source: https://web.archive.org/web/20210726130630/http://codepad.org/14koLKeg
+#
+# This code has been adopted to work in a modern version of FlightGear. To see how it works, in the
+# `/addon-menubar-items.xml` file, uncomment `<item>` for "Legacy Browser 2013" and in the `/addon-main.nas` file,
+# uncomment the `/nasal/Legacy/NasalBrowser2013.nas` line in the `hookFilesExcludedFromLoading` function.
+#
+var NasalBrowser2013 = {
     _browser: nil,
 
     _makeWindow: func {

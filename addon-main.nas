@@ -35,7 +35,8 @@ var main = func(addon) {
     Application
         .hookFilesExcludedFromLoading(func {
             return [
-                '/nasal/Legacy/NasalBrowserV1.nas',
+                '/nasal/Legacy/NasalBrowser2013.nas',
+                '/nasal/Legacy/NasalBrowser2014.nas',
             ];
         })
         .hookOnInitCanvas(func {

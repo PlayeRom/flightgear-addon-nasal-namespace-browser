@@ -1,10 +1,9 @@
 Nasal Namespace Browser
 =======================
 
-Reimplementation of the [Nasal Browser](https://wiki.flightgear.org/Nasal_Browser) using Canvas Widgets.
-This addon is inspired by the original implementation, which appears to have been lost after the shutdown of Gitorious — I was able to locate what seems to be an old copy, now placed in `/nasal/Legacy/NasalBrowser.nas`.
+Reimplementation of the [Nasal Browser](https://wiki.flightgear.org/Nasal_Browser) using Canvas Widgets. This add-on is based on the original implementation (2013), which was most likely lost after the shutdown of the Gitorious service — this copy was found and it's currently located in `/nasal/Legacy/NasalBrowser2013.nas`. In 2014, a revised version was created with fixed scrolling, colors and the ability to change value of items have been added. It's currently located in `/nasal/Legacy/NasalBrowser2014.nas`.
 
-While it retains the spirit and functionality of the original browser, the codebase has been refactored to use the current FlightGear Canvas UI.
+While this add-on retains the spirit and functionality of the original browser, the codebase has been rewritten to use the current FlightGear Canvas UI.
 
 ## Installation
 

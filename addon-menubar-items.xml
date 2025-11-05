@@ -32,12 +32,21 @@
             </item>
 
             <!-- <item>
-                <label>Legacy Browser v.1...</label>
-                <name>nasal-browser-addon-old</name>
+                <label>Legacy Browser 2013...</label>
                 <binding>
                     <command>nasal</command>
                     <script><![CDATA[
-                        globals['__addon[org.flightgear.addons.NasalNsBrowser]__'].NasalBrowserV1.toggleWindow();
+                        globals['__addon[org.flightgear.addons.NasalNsBrowser]__'].NasalBrowser2013.toggleWindow();
+                    ]]></script>
+                </binding>
+            </item> -->
+
+            <!-- <item>
+                <label>Legacy Browser 2014...</label>
+                <binding>
+                    <command>nasal</command>
+                    <script><![CDATA[
+                        globals['__addon[org.flightgear.addons.NasalNsBrowser]__'].NasalBrowser2014.new();
                     ]]></script>
                 </binding>
             </item> -->
