@@ -422,10 +422,11 @@ var NasalBrowser2014 = {
 
         } elsif (typeof(me._editing) == 'vector') {
             # Take a decimal/hexadecimal/base36 number
-               if (event.keyCode >= `0` and event.keyCode <= `9`) var val = event.keyCode - `0`;
-            elsif (event.keyCode >= `a` and event.keyCode <= `z`) var val = event.keyCode - `a` + 10;
-            elsif (event.keyCode >= `A` and event.keyCode <= `A`) var val = event.keyCode - `A` + 10;
-            else return 0;
+            # FIXME: `val` variable is never used.
+               if (string.isdigit(event.keyCode)) var val = event.keyCode - `0`;
+            elsif (string.islower(event.keyCode)) var val = event.keyCode - `a` + 10;
+            elsif (string.isupper(event.keyCode)) var val = event.keyCode - `A` + 10;
+            else return false;
 
             var key = {
                 value: me._editing[0],
@@ -682,31 +683,25 @@ var NasalBrowser2014 = {
     _isSym: func(str) {
         foreach (var d; me._deniedSymbols) {
             if (str == d) {
-                return 0;
+                return false;
             }
         }
 
         var length = size(str);
         var s = str[0];
 
-        if ((s < `a` or s > `z`)
-            and (s < `A` or s > `Z`)
-            and (s != `_`)
-        ) {
-            return 0;
+        if (s != `_` and !string.isalpha(s)) {
+            return false;
         }
 
         for (var i = 1; i < length; i += 1) {
-            if (((s = str[i]) != `_`)
-                and (s < `a` or s > `z`)
-                and (s < `A` or s > `Z`)
-                and (s < `0` or s > `9`)
-            ) {
-                return 0;
+            s = str[i];
+            if (s != `_` and !string.isalnum(s)) {
+                return false;
             }
         }
 
-        return 1;
+        return true;
     },
 
     _internSymbol: func(symbol) {
