@@ -687,13 +687,12 @@ var NasalBrowser2014 = {
             }
         }
 
-        var length = size(str);
         var s = str[0];
-
         if (s != `_` and !string.isalpha(s)) {
             return false;
         }
 
+        var length = size(str);
         for (var i = 1; i < length; i += 1) {
             s = str[i];
             if (s != `_` and !string.isalnum(s)) {
